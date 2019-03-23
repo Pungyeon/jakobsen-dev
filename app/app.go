@@ -3,6 +3,8 @@ package app
 import (
 	"log"
 	"net/http"
+
+	"github.com/Pungyeon/jakobsen-dev/database"
 )
 
 type App struct {
@@ -10,7 +12,7 @@ type App struct {
 	db   *database.DB
 }
 
-func New(db *DB, port string) *App {
+func New(db *database.DB, port string) *App {
 	return &App{
 		port: port,
 		db:   db,
