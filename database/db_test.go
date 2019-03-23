@@ -1,10 +1,16 @@
 package database
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Pungyeon/jakobsen-dev/model"
+)
+
+var (
+	put     model.Article
+	fetched model.Article
+	updated model.Article
+	err     error
 )
 
 func TestArticleDB(t *testing.T) {
@@ -26,27 +32,54 @@ func TestArticleDB(t *testing.T) {
 		ArticleLink: "https://raw.githubusercontent.com/Pungyeon/clean-go/master/README.md",
 	}
 
-	id, err := db.PutArticle(article)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Run("create new article", func(t *testing.T) {
+		put, err = db.PutArticle(article)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
 
-	fmt.Println(id)
+	t.Run("get all articles from database", func(t *testing.T) {
+		result, err := db.GetAllArticles()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(result) != 1 {
+			t.Fatal("article was not retrieved from database")
+		}
+	})
 
-	result, err := db.GetAllArticles()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(result) != 1 {
-		t.Fatal("article was not retrieved from database")
-	}
+	t.Run("get article by id", func(t *testing.T) {
+		fetched, err = db.GetArticle(put.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	dbarticle, err := db.GetArticle(id)
-	if err != nil {
-		t.Fatal(err)
-	}
+		if fetched.ID != put.ID {
+			t.Fatal("What? How did that happen?")
+		}
+	})
 
-	if dbarticle.ID != id {
-		t.Fatal("What? How did that happen?")
-	}
+	t.Run("update articel properties", func(t *testing.T) {
+		fetched.Title = "my first article"
+		fetched.Description = "this is definitely my first article"
+		fetched.ArticleLink = "https://raw.githubusercontent.com/Pungyeon/docker-example/master/README.md"
+
+		updated, err = db.UpdateArticle(fetched)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if updated.Title != fetched.Title {
+			t.Fatal("article title was not updated")
+		}
+
+		if updated.Description != fetched.Description {
+			t.Fatal("article description was not updated")
+		}
+
+		if updated.ArticleLink != fetched.ArticleLink {
+			t.Fatal("article link was not updated")
+		}
+	})
 }

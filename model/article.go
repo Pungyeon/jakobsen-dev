@@ -3,10 +3,11 @@ package model
 import "time"
 
 var (
-	EmptyArticle     = Article{}
-	EmptyArticleList = []Article{}
+	// EmptyArticle represents a null return of an article
+	EmptyArticle = Article{}
 )
 
+// Article is a pointer and description of a blog article
 type Article struct {
 	ID          int64     `json:"id" db:"id"`
 	Title       string    `json:"title" db:"title"`

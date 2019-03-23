@@ -1,5 +1,6 @@
 package database
 
+// ArticlesSchema is the schema for the article database table
 const ArticlesSchema = `
 CREATE TABLE IF NOT EXISTS articles (
 	id 				SERIAL PRIMARY KEY,
@@ -10,6 +11,7 @@ CREATE TABLE IF NOT EXISTS articles (
 )
 `
 
+// Schema represents a database table schema
 type Schema struct {
 	Name   string
 	Schema string
