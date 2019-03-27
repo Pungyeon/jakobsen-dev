@@ -34,19 +34,19 @@ func NewURI(options Options) ConnectionURI {
 }
 
 const (
-	GET_ARTICLE      = `SELECT id, title, description, article_link, created_at FROM articles WHERE id = %d`
-	GET_ALL_ARTICLES = `SELECT id, title, description, article_link, created_at FROM articles`
+	GET_ARTICLE      = `SELECT id, title, description, article_link, image_link, view_count, created_at FROM articles WHERE id = %d`
+	GET_ALL_ARTICLES = `SELECT id, title, description, article_link, image_link, view_count, created_at FROM articles`
 	PUT_ARTICLE      = `
 	INSERT INTO articles
-		(title, description, article_link)
-	VALUES ('%s', '%s', '%s')
-	RETURNING id, title, description, article_link, created_at
+		(title, description, article_link, image_link, view_count)
+	VALUES ('%s', '%s', '%s', '%s', %d)
+	RETURNING id, title, description, article_link, image_link, view_count, created_at
 	`
 	UPDATE_ARTICLE = `
 	UPDATE articles 
 		SET title = '%s', description = '%s', article_link = '%s'
 	WHERE id = %d
-	RETURNING id, title, description, article_link, created_at
+	RETURNING id, title, description, article_link, image_link, view_count, created_at
 	`
 )
 
@@ -75,38 +75,44 @@ func New(options Options) *DB {
 }
 
 // Create will create a new database
-func (db *DB) Create() {
+func (db *DB) Create() *DB {
 	if !db.options.Create {
-		return
+		return db
 	}
+	log.Println("Creating Database:", db.options.Name)
 	_, err := db.conn.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", db.options.Name))
 	if err != nil {
 		panic(err)
 	}
+	return db
 }
 
 // Drop will drop the current database
-func (db *DB) Drop() {
+func (db *DB) Drop() *DB {
 	if !db.options.Drop {
-		return
+		return db
 	}
+	log.Println("Dropping Database:", db.options.Name)
 	_, err := db.conn.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s", db.options.Name))
 	if err != nil {
 		panic(err)
 	}
+	return db
 }
 
 // Initialise will initialise all tables in the database
-func (db *DB) Initialise() {
+func (db *DB) Initialise() *DB {
 	if !db.options.Initialise {
-		return
+		return db
 	}
 	for _, schema := range schemas {
 		_, err := db.conn.Exec(schema.Schema)
 		if err != nil {
 			panic(fmt.Sprintf("Failed to create %s: %v", schema.Name, err))
 		}
+		log.Println("Initialising Database Table:", schema.Name)
 	}
+	return db
 }
 
 // GetAllArticles will return all articles in the database
@@ -130,7 +136,9 @@ func (db *DB) PutArticle(article model.Article) (model.Article, error) {
 	return scanArticleRow(
 		db.conn.QueryRow(fmt.Sprintf(
 			PUT_ARTICLE,
-			article.Title, article.Description, article.ArticleLink)))
+			article.Title, article.Description, article.ArticleLink,
+			article.ImageLink, article.ViewCount)),
+	)
 }
 
 // UpdateArticle will update an already existing article, overwriting all dynamic values
@@ -147,7 +155,8 @@ func scanArticleRow(row *sql.Row) (model.Article, error) {
 	var article model.Article
 	if err := row.Scan(
 		&article.ID, &article.Title, &article.Description,
-		&article.ArticleLink, &article.CreatedAt,
+		&article.ArticleLink, &article.ImageLink,
+		&article.ViewCount, &article.CreatedAt,
 	); err != nil {
 		return model.EmptyArticle, err
 	}
@@ -169,7 +178,9 @@ func scanArticleRows(rows *sql.Rows) ([]model.Article, error) {
 func scanCurrentInArticleRows(rows *sql.Rows) (model.Article, error) {
 	var article model.Article
 	if err := rows.Scan(
-		&article.ID, &article.Title, &article.Description, &article.ArticleLink, &article.CreatedAt,
+		&article.ID, &article.Title,
+		&article.Description, &article.ArticleLink,
+		&article.ImageLink, &article.ViewCount, &article.CreatedAt,
 	); err != nil {
 		return model.EmptyArticle, err
 	}

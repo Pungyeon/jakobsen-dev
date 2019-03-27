@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS articles (
 	id 				SERIAL PRIMARY KEY,
 	title 			STRING,
 	description 	STRING,
+	image_link 		STRING,
+	view_count 		INT,
 	article_link 	STRING,
 	created_at 		TIMESTAMPTZ DEFAULT NOW()
 )

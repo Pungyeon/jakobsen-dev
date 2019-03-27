@@ -6,6 +6,7 @@ import (
 
 	"github.com/Pungyeon/jakobsen-dev/database"
 	"github.com/Pungyeon/jakobsen-dev/handler"
+	"github.com/gorilla/handlers"
 )
 
 // App is the class containing all operations of the website application
@@ -30,5 +31,11 @@ func (app *App) Run() error {
 		Addr:    "0.0.0.0:" + app.port,
 	}
 	fmt.Println("Server running on:", server.Addr)
-	return server.ListenAndServe()
+	// return server.ListenAndServe()
+	return http.ListenAndServe(":"+app.port,
+		handlers.CORS(
+			handlers.AllowedHeaders([]string{"*"}),
+			handlers.AllowedMethods([]string{"*"}),
+			handlers.AllowedOrigins([]string{"*"}),
+		)(server.Handler))
 }
