@@ -44,7 +44,7 @@ func (handler *HTTPHandler) articlesGetAll(w http.ResponseWriter, r *http.Reques
 		handleError(err, w, http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(dbarticles)
+	w.Write(model.Articles(dbarticles).JSON())
 }
 
 func (handler *HTTPHandler) articlesGet(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +58,7 @@ func (handler *HTTPHandler) articlesGet(w http.ResponseWriter, r *http.Request) 
 		handleError(err, w, http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(dbarticle)
+	w.Write(dbarticle.JSON())
 }
 
 func handleError(err error, w http.ResponseWriter, status int) {

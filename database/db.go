@@ -34,20 +34,20 @@ func NewURI(options Options) ConnectionURI {
 }
 
 const (
-	GET_ARTICLE      = `SELECT id, title, description, article_link, image_link, view_count, created_at FROM articles WHERE id = %d`
-	GET_ALL_ARTICLES = `SELECT id, title, description, article_link, image_link, view_count, created_at FROM articles`
-	PUT_ARTICLE      = `
+	ARTICLE_PROPERTIES = `id, title, description, article_link, image_link, view_count, created_at, tags`
+	GET_ARTICLE        = `SELECT ` + ARTICLE_PROPERTIES + ` FROM articles WHERE id = %d`
+	GET_ALL_ARTICLES   = `SELECT ` + ARTICLE_PROPERTIES + ` FROM articles`
+	PUT_ARTICLE        = `
 	INSERT INTO articles
-		(title, description, article_link, image_link, view_count)
-	VALUES ('%s', '%s', '%s', '%s', %d)
-	RETURNING id, title, description, article_link, image_link, view_count, created_at
-	`
+		(title, description, article_link, image_link, view_count, tags)
+	VALUES ('%s', '%s', '%s', '%s', %d, '%s')
+	RETURNING ` + ARTICLE_PROPERTIES
+
 	UPDATE_ARTICLE = `
 	UPDATE articles 
 		SET title = '%s', description = '%s', article_link = '%s'
 	WHERE id = %d
-	RETURNING id, title, description, article_link, image_link, view_count, created_at
-	`
+	RETURNING ` + ARTICLE_PROPERTIES
 )
 
 func (uri ConnectionURI) String() string {
@@ -137,7 +137,7 @@ func (db *DB) PutArticle(article model.Article) (model.Article, error) {
 		db.conn.QueryRow(fmt.Sprintf(
 			PUT_ARTICLE,
 			article.Title, article.Description, article.ArticleLink,
-			article.ImageLink, article.ViewCount)),
+			article.ImageLink, article.ViewCount, article.Tags)),
 	)
 }
 
@@ -156,7 +156,7 @@ func scanArticleRow(row *sql.Row) (model.Article, error) {
 	if err := row.Scan(
 		&article.ID, &article.Title, &article.Description,
 		&article.ArticleLink, &article.ImageLink,
-		&article.ViewCount, &article.CreatedAt,
+		&article.ViewCount, &article.CreatedAt, &article.Tags,
 	); err != nil {
 		return model.EmptyArticle, err
 	}
@@ -180,7 +180,7 @@ func scanCurrentInArticleRows(rows *sql.Rows) (model.Article, error) {
 	if err := rows.Scan(
 		&article.ID, &article.Title,
 		&article.Description, &article.ArticleLink,
-		&article.ImageLink, &article.ViewCount, &article.CreatedAt,
+		&article.ImageLink, &article.ViewCount, &article.CreatedAt, &article.Tags,
 	); err != nil {
 		return model.EmptyArticle, err
 	}

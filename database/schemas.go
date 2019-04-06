@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS articles (
 	image_link 		STRING,
 	view_count 		INT,
 	article_link 	STRING,
-	created_at 		TIMESTAMPTZ DEFAULT NOW()
+	created_at 		TIMESTAMPTZ DEFAULT NOW(),
+	tags 			STRING
 )
 `
 

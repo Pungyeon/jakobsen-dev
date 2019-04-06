@@ -32,6 +32,7 @@ func TestArticleDB(t *testing.T) {
 		ArticleLink: "https://raw.githubusercontent.com/Pungyeon/clean-go/master/README.md",
 		ImageLink:   "https://external-preview.redd.it/L5a31wsfcT9TcNcvOF3HTOFkXxnKjA7OopCakXxScDg.png?auto=webp&s=bbb10ca8d08363bc2d94996a77619d8bf60c24e8",
 		ViewCount:   0,
+		Tags:        "ding,dong,doodle",
 	}
 
 	t.Run("create new article", func(t *testing.T) {
